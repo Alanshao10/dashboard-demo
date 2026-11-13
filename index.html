@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Макет дашборда контроля</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Идея: рабочая панель. Сверху четыре плитки-сигнала, ниже вкладки. Всё кликабельно, как в настоящей системе */
+:root{
+  --bg:#f3f6f4;--card:#fff;--ink:#14211f;--muted:#46585a;--line:#d3dedb;
+  --accent:#0d5c63;--accent-ink:#fff;--soft:#e2efee;
+  --signal:#f2a31b;--signal-text:#8a4b00;--signal-soft:#fdf1d9;
+  --ok:#1f7a45;--ok-soft:#e2f2e8;--bad:#b3261e;--bad-soft:#fbe7e4;
+  --display:"Unbounded","Onest",system-ui,sans-serif;
+  --body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1818;--card:#152425;--ink:#e8f1ef;--muted:#a8bcba;--line:#2a4041;
+    --accent:#58c2c7;--accent-ink:#06201f;--soft:#1a3335;
+    --signal:#f5b041;--signal-text:#f5c26b;--signal-soft:#33280f;
+    --ok:#6fd199;--ok-soft:#163626;--bad:#ff9a90;--bad-soft:#3b1a17;color-scheme:dark}
+}
+:root[data-theme="dark"]{
+  --bg:#0e1818;--card:#152425;--ink:#e8f1ef;--muted:#a8bcba;--line:#2a4041;
+  --accent:#58c2c7;--accent-ink:#06201f;--soft:#1a3335;
+  --signal:#f5b041;--signal-text:#f5c26b;--signal-soft:#33280f;
+  --ok:#6fd199;--ok-soft:#163626;--bad:#ff9a90;--bad-soft:#3b1a17;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--body)}
+button{font:inherit;cursor:pointer}
+.app{max-width:1100px;margin:0 auto;padding:0 16px 60px;display:flex;flex-direction:column;gap:20px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0 0}
+.logo{font:700 22px var(--display)}
+.logo small{display:block;font:500 15px var(--body);color:var(--muted);margin-top:2px}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:4px}
+.seg button{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:9px;font-weight:600;font-size:16px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.bell{position:relative;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 14px;font-weight:600;font-size:16px}
+.bell b{background:var(--bad);color:#fff;border-radius:999px;padding:0 8px;margin-left:6px;font-size:14px}
+.upd{font-size:15px;color:var(--muted)}
+.upd i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-right:6px}
+.demo{background:var(--signal-soft);color:var(--signal-text);border-left:6px solid var(--signal);border-radius:8px;padding:10px 14px;font-size:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.tile:hover{border-color:var(--accent)}
+.tile b{font:700 40px/1.1 var(--display)}
+.tile span{font-size:16px;color:var(--muted)}
+.tile.bad{border-left:8px solid var(--bad)}.tile.bad b{color:var(--bad)}
+.tile.warn{border-left:8px solid var(--signal)}
+.tile.ok{border-left:8px solid var(--ok)}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--muted);padding:12px 16px;font-weight:600;font-size:18px;border-bottom:4px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.panel{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:10px 18px;align-items:center}
+.item.hot{border:2px solid var(--accent)}
+.item h4{margin:0;font-size:19px;line-height:1.3}
+.meta{font-size:16px;color:var(--muted);display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:4px}
+.pill{font-size:15px;font-weight:700;border-radius:999px;padding:2px 11px;white-space:nowrap;display:inline-block}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.warn{background:var(--signal-soft);color:var(--signal-text)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.mute{background:var(--soft);color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:16px;background:var(--soft);color:var(--accent)}
+.btn.main{background:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible,.tile:focus-visible,.bell:focus-visible,.seg button:focus-visible,.tabs button:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.meter{height:12px;background:var(--soft);border-radius:6px;position:relative;margin-top:8px;overflow:hidden;max-width:420px}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--ok)}
+.meter.low i{background:var(--bad)}
+.meter em{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--ink)}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:24px;color:var(--muted);text-align:center}
+.tg{position:fixed;right:16px;bottom:16px;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:0 14px 40px rgba(0,0,0,.25);display:none;flex-direction:column;gap:8px;z-index:5}
+.tg.on{display:flex}
+.tg .h{font-size:15px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
+.tg b{font-size:19px}
+.close{border:0;background:none;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
+.feed{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:none;flex-direction:column;gap:10px}
+.feed.on{display:flex}
+.feed h4{margin:0;font-size:18px}
+.feed div{font-size:17px;padding:8px 0;border-top:1px solid var(--line)}
+.feed small{color:var(--muted);display:block;font-size:15px}
+@media(max-width:640px){.item{grid-template-columns:1fr}.acts{justify-content:flex-start}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="bar">
+    <div class="logo">Контроль<small>тендеры · склад · сроки</small></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Роль">
+        <button id="r-owner" aria-pressed="true">Собственник</button>
+        <button id="r-staff" aria-pressed="false">Менеджер закупок</button>
+      </div>
+      <button class="bell" id="bell">Оповещения<b id="bellN">3</b></button>
+    </div>
+  </div>
+
+  <div class="demo">Макет для показа. Все названия, цифры и сроки условные. Кнопки работают, чтобы было видно, как будет вести себя настоящая система.</div>
+  <div class="upd"><i></i>Обновлено сегодня, 15:20. Следующее обновление через 30 минут</div>
+
+  <div class="feed" id="feed">
+    <h4>Последние оповещения в Telegram</h4>
+    <div><b>Подача заявки сегодня:</b> поставка фильтрующих картриджей для молокозавода<small>15:02 · ответственный: менеджер закупок</small></div>
+    <div><b>Склад ниже минимума:</b> фильтрующие картриджи 5 мкм, осталось 14 из 20<small>13:40 · ответственный: кладовщик</small></div>
+    <div><b>Срок через 3 дня:</b> продление сертификата на продукцию<small>09:00 · ответственный: юрист</small></div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-t="tenders" aria-selected="true">Тендеры</button>
+    <button role="tab" data-t="stock" aria-selected="false">Склад</button>
+    <button role="tab" data-t="dead" aria-selected="false">Сроки</button>
+  </div>
+  <div class="panel" id="panel"></div>
+</div>
+
+<div class="tg" id="tg" role="status" aria-live="polite">
+  <div class="h"><span>Сообщение в Telegram · сейчас</span><button class="close" id="tgx" aria-label="Закрыть">×</button></div>
+  <b id="tgT"></b><span id="tgB"></span>
+</div>
+
+<script>
+var BASE=new Date(2026,10,13);
+function dstr(n){var d=new Date(BASE.getTime()+n*86400000);var w=['вс','пн','вт','ср','чт','пт','сб'][d.getDay()];return w+', '+('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)}
+var OWN='Менеджер закупок';
+var tenders=[
+ {t:'Поставка фильтрующих картриджей для молокозавода',sum:'1,8 млн',due:0,src:'площадка 1',o:OWN,s:'new'},
+ {t:'Закупка дозирующего оборудования для линии розлива',sum:'4,2 млн',due:3,src:'площадка 2',o:OWN,s:'work'},
+ {t:'Моющие и дезинфицирующие средства для пивоваренного завода',sum:'950 тыс.',due:5,src:'площадка 1',o:'Руководитель отдела',s:'new'},
+ {t:'Системы мойки технологического оборудования, винодельня',sum:'6,5 млн',due:9,src:'площадка 3',o:'Руководитель отдела',s:'new'},
+ {t:'Поставка хмелевых экстрактов, партия на квартал',sum:'2,3 млн',due:12,src:'площадка 2',o:OWN,s:'new'},
+ {t:'Расходные материалы для лаборатории контроля качества',sum:'380 тыс.',due:14,src:'площадка 1',o:OWN,s:'skip'}
+];
+var stock=[
+ {n:'Фильтрующие картриджи 5 мкм',q:14,m:20,u:'шт',o:'Кладовщик'},
+ {n:'Моющее средство для пищевого оборудования',q:180,m:100,u:'л',o:'Кладовщик'},
+ {n:'Стартовая культура для сыроделия',q:6,m:15,u:'кг',exp:34,o:'Кладовщик'},
+ {n:'Смазка для конвейерных лент',q:42,m:30,u:'л',o:'Кладовщик'},
+ {n:'Хмелевой экстракт',q:25,m:20,u:'кг',exp:20,o:'Кладовщик'},
+ {n:'Экспресс-тесты на качество',q:90,m:60,u:'шт',o:'Менеджер закупок'}
+];
+var dead=[
+ {t:'Продление сертификата на продукцию',d:3,o:'Юрист',k:'Сертификат'},
+ {t:'Ответ на письмо клиента по условиям поставки',d:-2,o:OWN,k:'Письмо'},
+ {t:'Акт по договору, этап 2',d:3,o:'Бухгалтер',k:'Договор'},
+ {t:'Окончание договора с поставщиком',d:21,o:'Руководитель отдела',k:'Договор'},
+ {t:'Страховка склада',d:30,o:'Бухгалтер',k:'Страховка'},
+ {t:'Поверка измерительного оборудования',d:10,o:OWN,k:'Оборудование'}
+];
+var role='owner',tab='tenders';
+function mine(o){return role==='owner'||o===OWN}
+function $(i){return document.getElementById(i)}
+function days(n){return n<0?'просрочено на '+(-n)+' дн.':n===0?'сегодня':n===1?'завтра':'через '+n+' дн.'}
+function cls(n){return n<=0?'bad':n<=3?'warn':'mute'}
+function low(s){return s.q<s.m}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+
+function tiles(){
+  var tn=tenders.filter(function(x){return mine(x.o)&&x.s==='new'}).length;
+  var tw=tenders.filter(function(x){return mine(x.o)&&x.s==='work'}).length;
+  var sl=stock.filter(function(x){return mine(x.o)&&low(x)}).length;
+  var dl=dead.filter(function(x){return mine(x.o)&&!x.done&&x.d<0}).length;
+  var dw=dead.filter(function(x){return mine(x.o)&&!x.done&&x.d>=0&&x.d<=7}).length;
+  var h='';
+  h+='<button class="tile '+(tn?'warn':'ok')+'" data-go="tenders"><b>'+tn+'</b><span>тендеров ждут решения</span></button>';
+  h+='<button class="tile ok" data-go="tenders"><b>'+tw+'</b><span>тендеров в работе</span></button>';
+  h+='<button class="tile '+(sl?'bad':'ok')+'" data-go="stock"><b>'+sl+'</b><span>позиций склада ниже минимума</span></button>';
+  h+='<button class="tile '+(dl?'bad':'ok')+'" data-go="dead"><b>'+dl+'</b><span>просроченных сроков</span></button>';
+  h+='<button class="tile warn" data-go="dead"><b>'+dw+'</b><span>сроков на этой неделе</span></button>';
+  $('tiles').innerHTML=h;
+}
+function panel(){
+  var h='';
+  if(tab==='tenders'){
+    var L=tenders.filter(function(x){return mine(x.o)});
+    L.sort(function(a,b){return a.due-b.due});
+    L.forEach(function(x){var i=tenders.indexOf(x);
+      var st=x.s==='work'?'<span class="pill ok">в работе</span>':x.s==='skip'?'<span class="pill mute">пропущен</span>':'<span class="pill warn">ждёт решения</span>';
+      var due=x.due===0?'подача сегодня':'подача '+days(x.due);
+      var a=x.s==='new'?'<button class="btn main" data-a="take" data-i="'+i+'">Беру</button><button class="btn" data-a="skip" data-i="'+i+'">Пропустить</button>':x.s==='work'?'<button class="btn" data-a="back" data-i="'+i+'">Вернуть</button>':'<button class="btn" data-a="back" data-i="'+i+'">Вернуть в список</button>';
+      h+='<div class="item'+(x.due===0&&x.s==='new'?' hot':'')+'"><div><h4>'+esc(x.t)+'</h4><div class="meta"><span class="pill '+cls(x.due)+'">'+due+'</span>'+st+'<span>'+x.sum+' ₽</span><span>'+x.src+'</span><span>ответственный: '+x.o.toLowerCase()+'</span></div></div><div class="acts">'+a+'</div></div>';
+    });
+  }
+  if(tab==='stock'){
+    var S=stock.filter(function(x){return mine(x.o)});
+    if(!S.length)h='<div class="empty">В вашей зоне нет позиций склада.</div>';
+    S.forEach(function(x){var i=stock.indexOf(x);var pc=Math.min(100,Math.round(x.q/(x.m*2)*100));var mk=50;
+      var ex=x.exp!==undefined?'<span class="pill '+(x.exp<=21?'warn':'mute')+'">годен ещё '+x.exp+' дн.</span>':'';
+      h+='<div class="item"><div><h4>'+esc(x.n)+'</h4><div class="meta"><span>осталось <b>'+x.q+' '+x.u+'</b>, минимум '+x.m+' '+x.u+'</span>'+(low(x)?'<span class="pill bad">ниже минимума</span>':'<span class="pill ok">в норме</span>')+ex+'</div><div class="meter'+(low(x)?' low':'')+'" aria-hidden="true"><i style="width:'+pc+'%"></i><em style="left:'+mk+'%"></em></div></div><div class="acts">'+(low(x)?'<button class="btn main" data-a="order" data-i="'+i+'">Заявка поставщику</button>':'')+'<button class="btn" data-a="use" data-i="'+i+'">Расход −1</button></div></div>';
+    });
+  }
+  if(tab==='dead'){
+    var D=dead.filter(function(x){return mine(x.o)}).slice().sort(function(a,b){return a.d-b.d});
+    D.forEach(function(x){var i=dead.indexOf(x);
+      if(x.done){h+='<div class="item"><div><h4>'+esc(x.t)+'</h4><div class="meta"><span class="pill ok">сделано</span><span>'+x.k+'</span></div></div><div class="acts"><button class="btn" data-a="undo" data-i="'+i+'">Вернуть</button></div></div>';return}
+      h+='<div class="item'+(x.d<0?' hot':'')+'"><div><h4>'+esc(x.t)+'</h4><div class="meta"><span class="pill '+cls(x.d)+'">'+days(x.d)+'</span><span>'+dstr(x.d)+'</span><span>'+x.k+'</span><span>ответственный: '+x.o.toLowerCase()+'</span></div></div><div class="acts"><button class="btn main" data-a="done" data-i="'+i+'">Сделано</button><button class="btn" data-a="move" data-i="'+i+'">Перенести на 7 дн.</button></div></div>';
+    });
+  }
+  $('panel').innerHTML=h||'<div class="empty">Здесь пока ничего нет.</div>';
+}
+function render(){
+  tiles();panel();
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.setAttribute('aria-selected',b.dataset.t===tab)});
+  $('r-owner').setAttribute('aria-pressed',role==='owner');$('r-staff').setAttribute('aria-pressed',role!=='owner');
+}
+var tgTimer;
+function toast(t,b){$('tgT').textContent=t;$('tgB').textContent=b;$('tg').classList.add('on');clearTimeout(tgTimer);tgTimer=setTimeout(function(){$('tg').classList.remove('on')},6000)}
+document.addEventListener('click',function(e){
+  var el=e.target.closest('button');if(!el)return;
+  if(el.dataset.go){tab=el.dataset.go;render();return}
+  if(el.dataset.t){tab=el.dataset.t;render();return}
+  var a=el.dataset.a,i=+el.dataset.i;
+  if(a==='take'){tenders[i].s='work';toast('Тендер взят в работу','Руководитель получил уведомление: '+tenders[i].t)}
+  if(a==='skip'){tenders[i].s='skip'}
+  if(a==='back'){tenders[i].s='new'}
+  if(a==='order'){toast('Черновик заявки поставщику готов','Позиция: '+stock[i].n+'. Отправка только по вашей команде.')}
+  if(a==='use'){if(stock[i].q>0)stock[i].q-=1;if(low(stock[i]))toast('Склад ниже минимума',stock[i].n+': осталось '+stock[i].q+' '+stock[i].u)}
+  if(a==='done'){dead[i].done=true}
+  if(a==='undo'){dead[i].done=false}
+  if(a==='move'){dead[i].d+=7;toast('Срок перенесён','Новый срок: '+dstr(dead[i].d))}
+  render();
+});
+$('r-owner').onclick=function(){role='owner';render()};
+$('r-staff').onclick=function(){role='staff';render()};
+$('bell').onclick=function(){$('feed').classList.toggle('on');$('bellN').style.display='none'};
+$('tgx').onclick=function(){$('tg').classList.remove('on')};
+render();
+</script>
+</body>
+</html>
